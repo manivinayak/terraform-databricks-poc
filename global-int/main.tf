@@ -1,7 +1,6 @@
-# Needed to get Tenant ID for Key Vault
 data "azurerm_client_config" "current" {}
 
-# 1. Create Networking First
+# 1. Network Module Call
 module "network" {
   source              = "../modules/networking"
   prefix              = "kiewit-${var.environment}"
@@ -12,19 +11,17 @@ module "network" {
   private_subnet_cidr = var.private_subnet_cidr
 }
 
-# 2. Create Key Vault
+# 2. Key Vault
 resource "azurerm_key_vault" "this" {
   name                = "kv-kiewit-${var.environment}-001"
   location            = var.location
   resource_group_name = var.resource_group
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
-  
-  # Suggested for POC to allow easy cleanup
   purge_protection_enabled = false 
 }
 
-# 3. Create Storage & Workspace (Passing Network IDs)
+# 3. Base Infrastructure Module Call
 module "base_infra" {
   source         = "../modules/azure_infra"
   prefix         = "kiewit-${var.environment}"

@@ -8,7 +8,7 @@ resource "azurerm_storage_account" "unity" {
   is_hns_enabled           = true
 }
 
-# 2. Medallion Layer Containers (Bronze, Silver, Gold)
+# 2. Medallion Layer Containers
 resource "azurerm_storage_data_lake_gen2_filesystem" "layers" {
   for_each           = toset(["bronze", "silver", "gold"])
   name               = each.key
@@ -23,7 +23,7 @@ resource "azurerm_databricks_access_connector" "unity" {
   identity { type = "SystemAssigned" }
 }
 
-# 4. Role Assignment (Allows Passwordless Access)
+# 4. Role Assignment
 resource "azurerm_role_assignment" "unity_data" {
   scope                = azurerm_storage_account.unity.id
   role_definition_name = "Storage Blob Data Contributor"

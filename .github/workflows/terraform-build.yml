@@ -5,18 +5,25 @@ on:
     branches: [ "main" ]
 
 permissions:
-  id-token: write
-  contents: read
+  id-token: write      # Required for Azure OIDC
+  contents: read       # Required to checkout the code
 
 jobs:
   terraform-deploy:
     runs-on: ubuntu-latest
     
     env:
+      # OIDC Authentication Variables
       ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
       ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
       ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
       ARM_USE_OIDC: true
+      
+      # Backend Configuration (Update these or use Secrets)
+      # These point to the storage account where your .tfstate files live
+      TF_STATE_RG: "tf-state-rg" # Example: matches your terraform.tfvars
+      TF_STATE_STORAGE: "tfstatenm"      # Change to your actual state storage name
+      TF_STATE_CONTAINER: "tfstate"
 
     steps:
       - name: Checkout Code
@@ -35,26 +42,41 @@ jobs:
       # --- STEP 1: Global Infrastructure (Folder: global-int) ---
       - name: 'Terraform Init (Global)'
         working-directory: global-int
-        run: terraform init -backend-config="key=global.tfstate"
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ env.TF_STATE_RG }}" \
+            -backend-config="storage_account_name=${{ env.TF_STATE_STORAGE }}" \
+            -backend-config="container_name=${{ env.TF_STATE_CONTAINER }}" \
+            -backend-config="key=global.tfstate"
 
       - name: 'Terraform Apply (Global)'
         working-directory: global-int
         run: terraform apply -auto-approve
 
-      # --- STEP 2: Project Kiewit-1 (Folder: projects/kiewit-1/dev) ---
+      # --- STEP 2: Project Kiewit-1 Dev ---
       - name: 'Terraform Init (Kiewit-1 Dev)'
         working-directory: projects/kiewit-1/dev
-        run: terraform init -backend-config="key=kiewit1-dev.tfstate"
+        run: |
+          terraform init \
+            -backend-config="resource_group_name=${{ tf-state-rg }}" \
+            -backend-config="storage_account_name=${{ env.TF_STATE_STORAGE }}" \
+            -backend-config="container_name=${{ env.TF_STATE_CONTAINER }}" \
+            -backend-config="key=kiewit1-dev.tfstate"
 
       - name: 'Terraform Apply (Kiewit-1 Dev)'
         working-directory: projects/kiewit-1/dev
         run: terraform apply -auto-approve
 
-      # --- STEP 3: Project Kiewit-2 (Folder: projects/kiewit-2/dev) ---
-      - name: 'Terraform Init (Kiewit-2 Dev)'
-        working-directory: projects/kiewit-2/dev
-        run: terraform init -backend-config="key=kiewit2-dev.tfstate"
+      # # --- STEP 3: Project Kiewit-2 Dev ---
+      # - name: 'Terraform Init (Kiewit-2 Dev)'
+      #   working-directory: projects/kiewit-2/dev
+      #   run: |
+      #     terraform init \
+      #       -backend-config="resource_group_name=${{ env.TF_STATE_RG }}" \
+      #       -backend-config="storage_account_name=${{ env.TF_STATE_STORAGE }}" \
+      #       -backend-config="container_name=${{ env.TF_STATE_CONTAINER }}" \
+      #       -backend-config="key=kiewit2-dev.tfstate"
 
-      - name: 'Terraform Apply (Kiewit-2 Dev)'
-        working-directory: projects/kiewit-2/dev
-        run: terraform apply -auto-approve
+      # - name: 'Terraform Apply (Kiewit-2 Dev)'
+      #   working-directory: projects/kiewit-2/dev
+      #   run: terraform apply -auto-approve
