@@ -51,10 +51,11 @@ resource "azurerm_subnet_network_security_group_association" "private" {
   network_security_group_id = azurerm_network_security_group.this.id
 }
 
+# --- OUTPUTS ---
 output "vnet_id" { value = azurerm_virtual_network.this.id }
 output "public_subnet_name" { value = azurerm_subnet.public.name }
 output "private_subnet_name" { value = azurerm_subnet.private.name }
 
-# ADDED THESE TWO OUTPUTS
+# New Outputs required by Databricks Workspace
 output "public_subnet_nsg_association_id" { value = azurerm_subnet_network_security_group_association.public.id }
 output "private_subnet_nsg_association_id" { value = azurerm_subnet_network_security_group_association.private.id }

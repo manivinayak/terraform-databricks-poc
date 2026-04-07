@@ -1,10 +1,12 @@
 data "azurerm_client_config" "current" {}
 
+# Create Resource Group First
 resource "azurerm_resource_group" "this" {
   name     = var.resource_group
   location = var.location
 }
 
+# 1. Create Networking
 module "network" {
   source              = "../modules/networking"
   prefix              = "kiewit-${var.environment}"
@@ -15,6 +17,7 @@ module "network" {
   private_subnet_cidr = var.private_subnet_cidr
 }
 
+# 2. Create Key Vault
 resource "azurerm_key_vault" "this" {
   name                = "kv-kiewit-${var.environment}-001"
   location            = azurerm_resource_group.this.location
@@ -24,16 +27,18 @@ resource "azurerm_key_vault" "this" {
   purge_protection_enabled = false 
 }
 
+# 3. Create Storage & Workspace
 module "base_infra" {
   source         = "../modules/azure_infra"
   prefix         = "kiewit-${var.environment}"
   rg_name        = azurerm_resource_group.this.name
   location       = azurerm_resource_group.this.location
+  
   vnet_id        = module.network.vnet_id
   public_subnet  = module.network.public_subnet_name
   private_subnet = module.network.private_subnet_name
   
-  # ADDED THESE TWO LINES
+  # Pass the new NSG Association IDs
   public_subnet_nsg_association_id  = module.network.public_subnet_nsg_association_id
   private_subnet_nsg_association_id = module.network.private_subnet_nsg_association_id
 }
