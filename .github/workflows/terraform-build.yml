@@ -5,11 +5,11 @@ on:
     branches: [ "main" ]
 
 permissions:
-  id-token: write      # Required for OIDC
-  contents: read       # Required for Checkout
+  id-token: write
+  contents: read
 
 jobs:
-  terraform-deploy:    # This is the 'jobs' property that was missing/misaligned
+  terraform-deploy:
     runs-on: ubuntu-latest
     
     env:
@@ -25,28 +25,25 @@ jobs:
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
-          client-id: ${{ secrets.AZURE_CLIENT_ID }}
-          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
-          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+          client-id: ${{ env.ARM_CLIENT_ID }}
+          tenant-id: ${{ env.ARM_TENANT_ID }}
+          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
 
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # --- STEP 1: Deploy Global Infrastructure ---
-      # No module path needed here; Terraform follows 'source' in main.tf
       - name: 'Terraform Init (Global)'
-        working-directory: global-init
+        working-directory: ${{ github.workspace }}/global-init
         run: terraform init -backend-config="key=global.tfstate"
 
       - name: 'Terraform Apply (Global)'
-        working-directory: global-init
+        working-directory: ${{ github.workspace }}/global-init
         run: terraform apply -auto-approve
 
-      # --- STEP 2: Deploy Kiewit-1 Dev ---
       - name: 'Terraform Init (Kiewit-1 Dev)'
-        working-directory: projects/kiewit-1/dev
+        working-directory: ${{ github.workspace }}/projects/kiewit-1/dev
         run: terraform init -backend-config="key=kiewit1-dev.tfstate"
 
       - name: 'Terraform Apply (Kiewit-1 Dev)'
-        working-directory: projects/kiewit-1/dev
+        working-directory: ${{ github.workspace }}/projects/kiewit-1/dev
         run: terraform apply -auto-approve
