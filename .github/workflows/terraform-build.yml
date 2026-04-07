@@ -53,19 +53,19 @@ jobs:
         working-directory: global-int
         run: terraform apply -auto-approve
 
-      # --- STEP 2: Project Kiewit-1 Dev ---
-      - name: 'Terraform Init (Kiewit-1 Dev)'
-        working-directory: projects/kiewit-1/dev
-        run: |
-          terraform init \
-            -backend-config="resource_group_name=${{ env.TF_STATE_RG }}" \
-            -backend-config="storage_account_name=${{ env.TF_STATE_STORAGE }}" \
-            -backend-config="container_name=${{ env.TF_STATE_CONTAINER }}" \
-            -backend-config="key=kiewit1-dev.tfstate"
+      # # --- STEP 2: Project Kiewit-1 Dev ---
+      # - name: 'Terraform Init (Kiewit-1 Dev)'
+      #   working-directory: projects/kiewit-1/dev
+      #   run: |
+      #     terraform init \
+      #       -backend-config="resource_group_name=${{ env.TF_STATE_RG }}" \
+      #       -backend-config="storage_account_name=${{ env.TF_STATE_STORAGE }}" \
+      #       -backend-config="container_name=${{ env.TF_STATE_CONTAINER }}" \
+      #       -backend-config="key=kiewit1-dev.tfstate"
 
-      - name: 'Terraform Apply (Kiewit-1 Dev)'
-        working-directory: projects/kiewit-1/dev
-        run: terraform apply -auto-approve
+      # - name: 'Terraform Apply (Kiewit-1 Dev)'
+      #   working-directory: projects/kiewit-1/dev
+      #   run: terraform apply -auto-approve
 
       # # --- STEP 3: Project Kiewit-2 Dev ---
       # - name: 'Terraform Init (Kiewit-2 Dev)'
