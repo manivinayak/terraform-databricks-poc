@@ -1,13 +1,26 @@
 terraform {
   required_providers {
-    databricks = { source = "databricks/databricks" }
-    azurerm    = { source = "hashicorp/azurerm" }
+    azurerm = {
+      source  = "hashicorp/azurerm"
+      version = "~> 3.0"
+    }
+    databricks = {
+      source = "databricks/databricks"
+    }
   }
   backend "azurerm" {
-    use_oidc = true # Passwordless
+    use_oidc = true
   }
 }
 
+# Required for the 'data' lookups to work
+provider "azurerm" {
+  features {} 
+  use_oidc = true
+}
+
+# The Databricks provider configuration (host is passed in main.tf)
+# No need to put 'host' here if you defined it in main.tf inside the provider "databricks" block
 provider "databricks" {
-  host = var.databricks_url # Passed from Global-Init output
+  # host = data.azurerm_databricks_workspace.this.workspace_url
 }
