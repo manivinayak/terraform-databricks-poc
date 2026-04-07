@@ -1,23 +1,4 @@
-name: 'Kiewit Platform Deploy'
-
-on:
-  push:
-    branches: [ "main" ]
-
-permissions:
-  id-token: write      # Required for OIDC
-  contents: read
-
-jobs:
-  terraform:
-    runs-on: ubuntu-latest
-    env:
-      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
-      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
-      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
-      ARM_USE_OIDC: true
-
-    steps:
+steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -33,18 +14,20 @@ jobs:
 
       # --- STEP 1: Deploy Global Infrastructure ---
       - name: 'Terraform Init (Global)'
-        working-directory: ./global-init
+        # Remove the "./" and just use the folder name
+        working-directory: global-init
         run: terraform init -backend-config="key=global.tfstate"
 
       - name: 'Terraform Apply (Global)'
-        working-directory: ./global-init
+        working-directory: global-init
         run: terraform apply -auto-approve
 
       # --- STEP 2: Deploy Kiewit-1 Dev ---
       - name: 'Terraform Init (Kiewit-1 Dev)'
-        working-directory: ./projects/kiewit-1/dev
+        # Ensure this matches your path: projects -> kiewit-1 -> dev
+        working-directory: projects/kiewit-1/dev
         run: terraform init -backend-config="key=kiewit1-dev.tfstate"
 
       - name: 'Terraform Apply (Kiewit-1 Dev)'
-        working-directory: ./projects/kiewit-1/dev
+        working-directory: projects/kiewit-1/dev
         run: terraform apply -auto-approve
