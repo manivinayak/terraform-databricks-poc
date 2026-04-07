@@ -58,7 +58,7 @@ jobs:
         working-directory: projects/kiewit-1/dev
         run: |
           terraform init \
-            -backend-config="resource_group_name=${{ tf-state-rg }}" \
+            -backend-config="resource_group_name=${{ env.TF_STATE_RG }}" \
             -backend-config="storage_account_name=${{ env.TF_STATE_STORAGE }}" \
             -backend-config="container_name=${{ env.TF_STATE_CONTAINER }}" \
             -backend-config="key=kiewit1-dev.tfstate"
