@@ -1,10 +1,11 @@
 locals {
-  project_id     = "kiewit-1"
-  env            = var.environment
+  project_id   = "kiewit-1"
   
-  # This MUST match the naming logic used in your global-init/main.tf
-  workspace_name = "kiewit-${local.env}-workspace"
+  # Dynamic names based on project ID and environment
+  catalog_name = "${replace(local.project_id, "-", "_")}_${var.environment}_catalog"
+  de_group     = "${local.project_id}-de-team"
   
-  catalog_name   = "${local.project_id}_${local.env}_catalog"
-  de_group       = "${local.project_id}-de-team"
+  # Matches the storage naming logic in your azure_infra module
+  # Result: "stkiewitdevunity"
+  storage_account_name = "stkiewit${var.environment}unity"
 }

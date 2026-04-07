@@ -1,4 +1,8 @@
-# projects/kiewit-1/dev/terraform.tfvars
-environment    = "dev"
-resource_group = "rg-kiewit-shared-platform"
-location       = "eastus"
+resource_group      = "rg-kiewit-shared-platform"
+location            = "eastus"
+environment         = "dev"
+
+# Must match the global ranges for discovery/data lookups
+vnet_cidr           = "10.0.0.0/16"
+public_subnet_cidr  = "10.0.1.0/24"
+private_subnet_cidr = "10.0.2.0/24"
