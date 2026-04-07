@@ -1,4 +1,24 @@
-steps:
+name: 'Kiewit Platform Deploy'
+
+on:
+  push:
+    branches: [ "main" ]
+
+permissions:
+  id-token: write      # Required for OIDC
+  contents: read       # Required for Checkout
+
+jobs:
+  terraform-deploy:    # This is the 'jobs' property that was missing/misaligned
+    runs-on: ubuntu-latest
+    
+    env:
+      ARM_CLIENT_ID: ${{ secrets.AZURE_CLIENT_ID }}
+      ARM_SUBSCRIPTION_ID: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
+      ARM_TENANT_ID: ${{ secrets.AZURE_TENANT_ID }}
+      ARM_USE_OIDC: true
+
+    steps:
       - name: Checkout Code
         uses: actions/checkout@v4
 
@@ -13,8 +33,8 @@ steps:
         uses: hashicorp/setup-terraform@v3
 
       # --- STEP 1: Deploy Global Infrastructure ---
+      # No module path needed here; Terraform follows 'source' in main.tf
       - name: 'Terraform Init (Global)'
-        # Remove the "./" and just use the folder name
         working-directory: global-init
         run: terraform init -backend-config="key=global.tfstate"
 
@@ -24,7 +44,6 @@ steps:
 
       # --- STEP 2: Deploy Kiewit-1 Dev ---
       - name: 'Terraform Init (Kiewit-1 Dev)'
-        # Ensure this matches your path: projects -> kiewit-1 -> dev
         working-directory: projects/kiewit-1/dev
         run: terraform init -backend-config="key=kiewit1-dev.tfstate"
 
