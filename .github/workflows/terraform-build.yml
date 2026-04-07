@@ -5,8 +5,8 @@ on:
     branches: [ "main" ]
 
 permissions:
-  id-token: write      # Required for Azure OIDC
-  contents: read       # Required for Checkout
+  id-token: write
+  contents: read
 
 jobs:
   terraform-deploy:
@@ -32,16 +32,16 @@ jobs:
       - name: Setup Terraform
         uses: hashicorp/setup-terraform@v3
 
-      # --- STEP 1: Global Infrastructure (RG, VNet, Workspace) ---
+      # --- STEP 1: Global Infrastructure (Folder: global-int) ---
       - name: 'Terraform Init (Global)'
-        working-directory: global-init
+        working-directory: global-int
         run: terraform init -backend-config="key=global.tfstate"
 
       - name: 'Terraform Apply (Global)'
-        working-directory: global-init
+        working-directory: global-int
         run: terraform apply -auto-approve
 
-      # --- STEP 2: Project Kiewit-1 (Unity Catalog, Medallion Layers) ---
+      # --- STEP 2: Project Kiewit-1 (Folder: projects/kiewit-1/dev) ---
       - name: 'Terraform Init (Kiewit-1 Dev)'
         working-directory: projects/kiewit-1/dev
         run: terraform init -backend-config="key=kiewit1-dev.tfstate"
@@ -50,7 +50,7 @@ jobs:
         working-directory: projects/kiewit-1/dev
         run: terraform apply -auto-approve
 
-      # --- STEP 3: Project Kiewit-2 (Unity Catalog, Medallion Layers) ---
+      # --- STEP 3: Project Kiewit-2 (Folder: projects/kiewit-2/dev) ---
       - name: 'Terraform Init (Kiewit-2 Dev)'
         working-directory: projects/kiewit-2/dev
         run: terraform init -backend-config="key=kiewit2-dev.tfstate"
