@@ -5,7 +5,7 @@ on:
     branches: [ "main" ]
 
 permissions:
-  id-token: write      # Crucial for OIDC
+  id-token: write      # Required for OIDC
   contents: read
 
 jobs:
@@ -18,23 +18,33 @@ jobs:
       ARM_USE_OIDC: true
 
     steps:
-      - uses: actions/checkout@v4
+      - name: Checkout Code
+        uses: actions/checkout@v4
 
       - name: 'Az CLI login'
         uses: azure/login@v2
         with:
-          client-id: ${{ env.ARM_CLIENT_ID }}
-          tenant-id: ${{ env.ARM_TENANT_ID }}
-          subscription-id: ${{ env.ARM_SUBSCRIPTION_ID }}
+          client-id: ${{ secrets.AZURE_CLIENT_ID }}
+          tenant-id: ${{ secrets.AZURE_TENANT_ID }}
+          subscription-id: ${{ secrets.AZURE_SUBSCRIPTION_ID }}
 
-      - name: 'Deploy Global'
-        run: |
-          cd terraform/global-init
-          terraform init -backend-config="key=global.tfstate"
-          terraform apply -auto-approve
+      - name: Setup Terraform
+        uses: hashicorp/setup-terraform@v3
 
-      - name: 'Deploy Kiewit-1'
-        run: |
-          cd terraform/projects/kiewit-1
-          terraform init -backend-config="key=kiewit1.tfstate"
-          terraform apply -auto-approve
+      # --- STEP 1: Deploy Global Infrastructure ---
+      - name: 'Terraform Init (Global)'
+        working-directory: ./global-init
+        run: terraform init -backend-config="key=global.tfstate"
+
+      - name: 'Terraform Apply (Global)'
+        working-directory: ./global-init
+        run: terraform apply -auto-approve
+
+      # --- STEP 2: Deploy Kiewit-1 Dev ---
+      - name: 'Terraform Init (Kiewit-1 Dev)'
+        working-directory: ./projects/kiewit-1/dev
+        run: terraform init -backend-config="key=kiewit1-dev.tfstate"
+
+      - name: 'Terraform Apply (Kiewit-1 Dev)'
+        working-directory: ./projects/kiewit-1/dev
+        run: terraform apply -auto-approve
