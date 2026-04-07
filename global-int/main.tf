@@ -1,3 +1,6 @@
+# Needed to get Tenant ID for Key Vault
+data "azurerm_client_config" "current" {}
+
 # 1. Create Networking First
 module "network" {
   source              = "../modules/networking"
@@ -16,6 +19,9 @@ resource "azurerm_key_vault" "this" {
   resource_group_name = var.resource_group
   tenant_id           = data.azurerm_client_config.current.tenant_id
   sku_name            = "standard"
+  
+  # Suggested for POC to allow easy cleanup
+  purge_protection_enabled = false 
 }
 
 # 3. Create Storage & Workspace (Passing Network IDs)

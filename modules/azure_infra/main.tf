@@ -8,14 +8,14 @@ resource "azurerm_storage_account" "unity" {
   is_hns_enabled           = true
 }
 
-# 2. Create the Bronze, Silver, and Gold Containers
+# 2. Medallion Layer Containers (Bronze, Silver, Gold)
 resource "azurerm_storage_data_lake_gen2_filesystem" "layers" {
   for_each           = toset(["bronze", "silver", "gold"])
   name               = each.key
   storage_account_id = azurerm_storage_account.unity.id
 }
 
-# 3. Access Connector (Identity)
+# 3. Access Connector (Identity for Unity Catalog)
 resource "azurerm_databricks_access_connector" "unity" {
   name                = "${var.prefix}-connector"
   resource_group_name = var.rg_name
@@ -23,14 +23,14 @@ resource "azurerm_databricks_access_connector" "unity" {
   identity { type = "SystemAssigned" }
 }
 
-# 4. Permissions (Passwordless) - Grant access to the whole account
+# 4. Role Assignment (Allows Passwordless Access)
 resource "azurerm_role_assignment" "unity_data" {
   scope                = azurerm_storage_account.unity.id
   role_definition_name = "Storage Blob Data Contributor"
   principal_id         = azurerm_databricks_access_connector.unity.identity[0].principal_id
 }
 
-# 5. Workspace with VNet Injection
+# 5. Databricks Workspace with VNet Injection
 resource "azurerm_databricks_workspace" "this" {
   name                = "${var.prefix}-workspace"
   resource_group_name = var.rg_name
