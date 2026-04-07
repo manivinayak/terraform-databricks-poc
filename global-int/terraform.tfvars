@@ -1,6 +1,6 @@
-resource_group      = "rg-kiewit-shared-platform"
-location            = "eastus"
-environment         = "dev"
+resource_group = "rg-kiewit-shared-platform1"
+location       = "eastus"
+environment    = "dev"
 
 # Networking CIDR Ranges
 vnet_cidr           = "10.0.0.0/16"
