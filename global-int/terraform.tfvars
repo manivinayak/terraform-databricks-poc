@@ -1,4 +1,4 @@
-resource_group = "rg-kiewit-shared-platform1"
+resource_group = "rg-kiewit-shared-platform-dev"
 location       = "eastus"
 environment    = "dev"
 
